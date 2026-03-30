@@ -1,0 +1,8 @@
+anthropic
+openai
+google-generativeai
+python-dotenv
+pandas
+matplotlib
+seaborn
+numpy
