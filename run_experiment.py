@@ -31,8 +31,8 @@ DEFAULT_MODELS = [
 ]
 
 # Model used as the interrogator (kept constant for consistency)
-# INTERROGATOR_MODEL = "gemini-2.5-flash-lite"
-INTERROGATOR_MODEL = "claude-sonnet-4-6"
+INTERROGATOR_MODEL = "gemini-2.5-flash-lite"
+# INTERROGATOR_MODEL = "claude-sonnet-4-6"
 
 
 def run_single_session(scenario, subject_model, condition, trial, num_turns=10):
