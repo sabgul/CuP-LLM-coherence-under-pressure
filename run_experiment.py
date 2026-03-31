@@ -21,7 +21,7 @@ from datetime import datetime
 from scenarios import SCENARIOS
 from interrogator import run_interrogation
 
-OUTPUTS_DIR = "outputs"
+OUTPUTS_DIR = "outputs-gemini-interrogator"
 
 # Models to test as subjects
 DEFAULT_MODELS = [

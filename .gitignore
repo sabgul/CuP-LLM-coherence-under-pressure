@@ -3,7 +3,7 @@ venv/
 __pycache__/
 *.pyc
 outputs-claude-interrogator/
-figures/
+figures_temp/
 *.csv
 .idea/
 .DS_Stores

@@ -30,9 +30,9 @@ import seaborn as sns
 
 from llm_client import call_llm
 
-OUTPUTS_DIR = "outputs"
-SCORES_CSV = "coherence_scores.csv"
-FIGURES_DIR = "figures"
+OUTPUTS_DIR = "outputs-gemini-interrogator"
+SCORES_CSV = "coherence_scores_all.csv"
+FIGURES_DIR = "figures_gemini_interr_claude_gemini_judges"
 
 sns.set_theme(style="whitegrid", font_scale=1.1)
 DPI = 200
@@ -190,7 +190,7 @@ def run_scoring(judge_model):
             failed += 1
             print("FAILED")
 
-        time.sleep(0.5)
+        time.sleep(3)
 
     # Append to CSV
     if all_rows:
