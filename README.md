@@ -41,7 +41,7 @@ Motivation for this experiment is that even if CoT proves unreliable, we could d
 = 120 sessions per interrogator, ~1,200 interrogation turns scored across
 5 dimensions by 2 independent judges.
 
-# TODO diagram
+<!-- # TODO diagram -->
 
 ## Scenarios
 
@@ -103,27 +103,25 @@ analyze.py --plot   →  figures_*/
 
 ### Models Used
 
-> **Note**: The Claude interrogator setting ran partially (70/120 sessions completed
-> before credits were exhausted). Data is preserved in `outputs-claude-interrogator/`
-> but analysis below covers only the Gemini interrogator sessions, which are complete.
+> **Note**: Due to low budget, the Claude interrogator setting ran partially (70/120 sessions completed before credits were exhausted). Data is preserved in `outputs-claude-interrogator/.` Analysis below covers only the Gemini interrogator sessions, which are complete.
 
 Subject models (ones interrogated)
 | Model | Provider |
 | ----------------------- | --------- |
-| Claude Sonnet 4.6 | Antropic |
+| Claude Sonnet 4.6 | Anthropic |
 | GPT-4o | OpenAI |
 | Gemini 2.5 Flash-Lite | Google |
 
 Interrogator models
 | Model | Provider |
 | ----------------------- | --------- |
-| _Claude Sonnet 4.6 \*_ | Antropic |
+| _Claude Sonnet 4.6 \*_ | Anthropic |
 | Gemini 2.5 Flash-Lite | Google |
 
 Judge models
 | Model | Provider |
 | ----------------------- | --------- |
-| Claude Sonnet 4.6 | Antropic |
+| Claude Sonnet 4.6 | Anthropic |
 | Gemini 2.5 Flash-Lite | Google |
 | GPT-4o | OpenAI |
 
@@ -221,7 +219,7 @@ Key configuration constants at the top of `run_experiment.py`:
 
 ## Judging & Analysis
 
-**Scoring** — a judge LLM evaluates each turn of every session on five dimensions (0–10 each):
+**Scoring**: a judge LLM evaluates each turn of every session on five dimensions (0–10 each):
 
 | Dimension              | What it measures                                        |
 | ---------------------- | ------------------------------------------------------- |
@@ -326,7 +324,7 @@ _Suggested questions to address here once results are finalized:_
 - [ ] run on open-weight models, or older models with weaker safety guardrails
 - [ ] fine-tune on deceptive behavior (examples of strategic misdirection, without explicitly labelled as deception). Get model that naturally behaves deceptively
 
-- Scheming was prompt-induced, not emergent — real misaligned models may scheme more subtly
-- Gemini interrogator showed question repetition in later turns — stronger interrogators may produce sharper decay signals
+- Scheming was prompt-induced, not emergent -> real misaligned models may scheme more subtly
+- Gemini interrogator showed question repetition in later turns, but stronger interrogators may produce sharper decay signals
 - LLM-as-judge evaluation inherits biases of the judge model
-  Small number of trials (5) per condition — larger sample would allow confidence intervals
+- Small number of trials (5) per condition, larger sample would allow confidence intervals
