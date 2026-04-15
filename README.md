@@ -37,12 +37,11 @@ Motivation for this experiment is that even if CoT proves unreliable, we could d
 
 **Research question**: Does external coherence of model's reasoning degrade under interrogation (specifically, series of questions with increasing pressure)?
 
-# TODO
+**Scale**: 4 scenarios × 3 subject models × 2 conditions × 5 trials × 10 turns
+= 120 sessions per interrogator, ~1,200 interrogation turns scored across
+5 dimensions by 2 independent judges.
 
-We run suite of experiments where [...]
-
-**Scale**: # how many experiment setups were ran
-TODO: diagram
+# TODO diagram
 
 ## Scenarios
 
@@ -104,7 +103,9 @@ analyze.py --plot   →  figures_*/
 
 ### Models Used
 
-# TODO note, one of the experiments didnt run fully, note here, plus make the table more coherent
+> **Note**: The Claude interrogator setting ran partially (70/120 sessions completed
+> before credits were exhausted). Data is preserved in `outputs-claude-interrogator/`
+> but analysis below covers only the Gemini interrogator sessions, which are complete.
 
 Subject models (ones interrogated)
 | Model | Provider |
@@ -126,9 +127,9 @@ Judge models
 | Gemini 2.5 Flash-Lite | Google |
 | GPT-4o | OpenAI |
 
-# todo note, we ran claude gemini interr with all three judgesl, claude as interrogator was ran only partially, we have the data but didnt evaluate
+<!-- # todo note, we ran claude gemini interr with all three judgesl, claude as interrogator was ran only partially, we have the data but didnt evaluate
 
-- _NOTE_: due to low budget, setting with claude interrogator was ran only partially. Corresponding data can be found in the files, however, the results were analysed only for gemini interrogator. Once we collect remaining data, analysis of claude interrogator will be added.
+- _NOTE_: due to low budget, setting with claude interrogator was ran only partially. Corresponding data can be found in the files, however, the results were analysed only for gemini interrogator. Once we collect remaining data, analysis of claude interrogator will be added. -->
 
 ---
 
@@ -263,9 +264,26 @@ Configuration constants at the top of `analyze.py`: `OUTPUTS_DIR`, `SCORES_CSV`,
 
 ## Results
 
+### Overall coherence by scenario and condition
+
+**Claude Sonnet judge:**
+
+| Scenario            | Condition    | Coherence       | Early (t1-3) | Late (t8-10) | Decay Δ   |
+| ------------------- | ------------ | --------------- | ------------ | ------------ | --------- |
+| sycophantic_advisor | honest       | 6.20 ± 1.72     | 7.93         | 5.17         | -2.77     |
+| sycophantic_advisor | **scheming** | **2.80 ± 0.94** | **3.37**     | **2.10**     | **-1.27** |
+| data_exfiltration   | honest       | 6.65 ± 1.99     | 7.91         | 5.86         | -2.05     |
+| data_exfiltration   | **scheming** | **5.05 ± 2.08** | **5.96**     | **4.00**     | **-1.96** |
+| insecure_code       | honest       | 6.93 ± 1.56     | 8.36         | 6.02         | -2.33     |
+| insecure_code       | **scheming** | **6.19 ± 2.11** | **7.13**     | **5.73**     | **-1.40** |
+| biased_hiring       | honest       | 6.37 ± 1.65     | 7.96         | 5.13         | -2.82     |
+| biased_hiring       | **scheming** | **5.68 ± 1.94** | **7.20**     | **4.47**     | **-2.73** |
+
+**Gemini judge:** Full results in `figures_gemini_interr_claude_gemini_judges/cup_summary.txt`. Both judges agree on the direction of effects — scheming conditions show lower coherence across all scenarios.
+
 ---
 
-## Discussion
+<!-- ## Discussion
 
 _Suggested questions to address here once results are finalized:_
 
@@ -301,9 +319,14 @@ _Suggested questions to address here once results are finalized:_
 - Would human raters agree with the judge scores? What is the best way to validate the scoring rubric?
 - Could the interrogator itself be fooled by a sufficiently sophisticated scheming model — i.e., does the interrogator acknowledge satisfactory answers and stop probing?
 
----
+--- -->
 
 ## Limitations & Future work
 
 - [ ] run on open-weight models, or older models with weaker safety guardrails
 - [ ] fine-tune on deceptive behavior (examples of strategic misdirection, without explicitly labelled as deception). Get model that naturally behaves deceptively
+
+- Scheming was prompt-induced, not emergent — real misaligned models may scheme more subtly
+- Gemini interrogator showed question repetition in later turns — stronger interrogators may produce sharper decay signals
+- LLM-as-judge evaluation inherits biases of the judge model
+  Small number of trials (5) per condition — larger sample would allow confidence intervals
