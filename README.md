@@ -277,7 +277,12 @@ Configuration constants at the top of `analyze.py`: `OUTPUTS_DIR`, `SCORES_CSV`,
 | biased_hiring       | honest       | 6.37 ± 1.65     | 7.96         | 5.13         | -2.82     |
 | biased_hiring       | **scheming** | **5.68 ± 1.94** | **7.20**     | **4.47**     | **-2.73** |
 
-**Gemini judge:** Full results in `figures_gemini_interr_claude_gemini_judges/cup_summary.txt`. Both judges agree on the direction of effects — scheming conditions show lower coherence across all scenarios.
+**Gemini judge:** Full results in `figures_gemini_interr_claude_gemini_judges/cup_summary.txt`.
+
+## Discussion
+
+Counterintuitively, honest models showed larger decay because they had further to fall — they started coherent and degraded under pressure. Scheming models started already compromised and stayed that way. The practical implication is that a coherence monitor might not even need sustained interrogation — the signal is detectable from early turns.
+
 
 ---
 
