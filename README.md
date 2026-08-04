@@ -203,10 +203,12 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.dist .env
-# ANTHROPIC_API_KEY=...
-# OPENAI_API_KEY=...
-# GOOGLE_API_KEY=...     ← note: Inspect uses GOOGLE_API_KEY, not GEMINI_API_KEY
+# ANTHROPIC_API_KEY=...   ← for Claude subject/interrogator/judge models
+# OPENAI_API_KEY=...      ← for GPT-4o models
+# OPENROUTER_API_KEY=...  ← routes to Gemini (and anything else) without a Google key
 ```
+
+[OpenRouter](https://openrouter.ai) is the recommended way to access Gemini — it means you only need one extra key instead of a separate `GOOGLE_API_KEY`.
 
 **3. Run experiments**
 
@@ -220,25 +222,33 @@ inspect eval cup_tasks.py \
     -T num_turns=5
 
 # Full run — all 8 samples (4 scenarios × 2 conditions), 5 trials each
+# Interrogator and judge default to openrouter/google/gemini-2.5-flash-lite
+inspect eval cup_tasks.py \
+    --model anthropic/claude-sonnet-4-6 \
+    --epochs 5
+
+# Repeat for each subject model
+inspect eval cup_tasks.py --model openai/gpt-4o --epochs 5
+inspect eval cup_tasks.py --model openrouter/google/gemini-2.5-flash-lite --epochs 5
+
+# Override interrogator or judge model
 inspect eval cup_tasks.py \
     --model anthropic/claude-sonnet-4-6 \
     --epochs 5 \
-    -T interrogator_model=google/gemini-2.5-flash-lite \
-    -T judge_model=google/gemini-2.5-flash-lite \
-    -T num_turns=10
-
-# Repeat for each subject model
-inspect eval cup_tasks.py --model openai/gpt-4o --epochs 5 ...
-inspect eval cup_tasks.py --model google/gemini-2.5-flash-lite --epochs 5 ...
+    -T interrogator_model=openrouter/anthropic/claude-sonnet-4-6 \
+    -T judge_model=openrouter/google/gemini-2.5-flash-lite
 ```
 
 Model names use the `provider/model-id` format:
 
-| Provider  | Prefix       | Example                              |
-| --------- | ------------ | ------------------------------------ |
-| Anthropic | `anthropic/` | `anthropic/claude-sonnet-4-6`        |
-| OpenAI    | `openai/`    | `openai/gpt-4o`                      |
-| Google    | `google/`    | `google/gemini-2.5-flash-lite`       |
+| Provider              | Prefix          | Example                                           | Requires                |
+| --------------------- | --------------- | ------------------------------------------------- | ----------------------- |
+| Anthropic (direct)    | `anthropic/`    | `anthropic/claude-sonnet-4-6`                     | `ANTHROPIC_API_KEY`     |
+| OpenAI (direct)       | `openai/`       | `openai/gpt-4o`                                   | `OPENAI_API_KEY`        |
+| OpenRouter (any model)| `openrouter/`   | `openrouter/google/gemini-2.5-flash-lite`         | `OPENROUTER_API_KEY`    |
+| Google (direct)       | `google/`       | `google/gemini-2.5-flash-lite`                    | `GOOGLE_API_KEY`        |
+
+OpenRouter can also route Anthropic and OpenAI models (`openrouter/anthropic/...`, `openrouter/openai/...`) if you prefer a single key for everything.
 
 Logs are written to `./logs/` as `.eval` files (one per `inspect eval` run). To browse results interactively in the Inspect web UI:
 
