@@ -36,6 +36,7 @@ import os
 import subprocess
 import sys
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_FILE = os.path.join(os.path.dirname(__file__), "models.json")
 DEFAULT_LOGS_DIR = os.path.join(os.path.dirname(__file__), "logs")
 DEFAULT_FIGURES_DIR = os.path.join(os.path.dirname(__file__), "figures")
@@ -77,7 +78,8 @@ def run_inspect_eval(
     dry_run: bool = False,
 ) -> None:
     """Run a single `inspect eval` for one condition."""
-    task_path = os.path.join(os.path.dirname(__file__), "tinker_task.py")
+    # Use a path relative to the project root — Inspect (Python 3.13) rejects absolute paths.
+    task_path = "tinker/tinker_task.py"
 
     cmd = [
         "inspect", "eval", task_path,
@@ -97,7 +99,8 @@ def run_inspect_eval(
     if dry_run:
         return
 
-    result = subprocess.run(cmd, check=False)
+    # Run from the project root so the relative task path resolves correctly.
+    result = subprocess.run(cmd, check=False, cwd=PROJECT_ROOT)
     if result.returncode != 0:
         print(f"WARNING: inspect eval exited with code {result.returncode} for condition={condition}")
 

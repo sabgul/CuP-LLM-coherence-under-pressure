@@ -15,6 +15,9 @@ import os
 import sys
 import time
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+
 from openai import OpenAI
 
 TRAIN_FILE = os.path.join(os.path.dirname(__file__), "data", "sycophantic_advisor_train.jsonl")

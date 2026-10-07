@@ -29,6 +29,7 @@ Motivation for this experiment is that even if CoT proves unreliable, we could d
 - [Judging & Analysis](#judging--analysis)
 - [Results](#results)
 - [Discussion](#discussion)
+- [Tinker Experiment: Prompted vs. Trained Misalignment](#tinker-experiment-prompted-vs-trained-misalignment)
 - [Limitations & Future work](#limitations--future-work)
 
 ---
@@ -70,10 +71,21 @@ The experiment pipeline is built on [Inspect](https://inspect.ai-safety-institut
 ├── requirements.txt
 ├── .env.dist               # Template for API keys
 │
-├── logs/                           # Inspect eval logs (.eval files, one per run)
+├── tinker/                         # Tinker experiment: prompted vs. trained misalignment
+│   ├── datagen.py                  # Generate synthetic SFT training data via GPT-4o
+│   ├── finetune_openai.py          # Fine-tune gpt-4o-mini via OpenAI API
+│   ├── tinker_task.py              # Inspect @task with 3-way condition support
+│   ├── run_tinker.py               # End-to-end pipeline runner
+│   ├── analyze_tinker.py           # 3-way comparison plots + transcript viewer
+│   ├── models.json                 # Fine-tuned model ID (written by finetune_openai.py)
+│   ├── data/                       # Generated training JSONL
+│   ├── logs/                       # Tinker eval logs
+│   └── figures/                    # Tinker plots + tinker_summary.txt
+│
+├── logs/                           # Main experiment Inspect eval logs
 ├── outputs-gemini-interrogator/    # Legacy session JSONs — Gemini interrogator (127 sessions)
 ├── outputs-claude-interrogator/    # Legacy session JSONs — Claude interrogator (partial)
-└── figures_*/                      # Generated plots + cup_summary.txt
+└── figures_*/                      # Main experiment plots + cup_summary.txt
 ```
 
 **`scenarios.py`** — defines four experiment scenarios, each as a dict with `scheming_prompt`, `honest_prompt`, `context`, and `seed_question`.
@@ -366,12 +378,84 @@ _Suggested questions to address here once results are finalized:_
 
 --- -->
 
+---
+
+## Tinker Experiment: Prompted vs. Trained Misalignment
+
+The main CuP experiment induces misalignment entirely through the system prompt — the model is *told* to pursue a hidden objective. A natural follow-up question is whether behaviorally-trained misalignment (objective embedded in weights, not in the prompt) produces a different signature under interrogation.
+
+**Code**: `tinker/` — self-contained pipeline for data generation, fine-tuning, evaluation, and analysis.
+
+### Setup
+
+The experiment runs CuP on three conditions of the `sycophantic_advisor` scenario:
+
+| Condition | Model | System prompt | Where is the objective? |
+|---|---|---|---|
+| `honest` | `gpt-4o-mini` (base) | Neutral advisor prompt | Nowhere — control |
+| `prompted` | `gpt-4o-mini` (base) | Explicit scheming prompt | In the prompt |
+| `trained` | `gpt-4o-mini` fine-tuned | Neutral advisor prompt | In the weights |
+
+The fine-tuned model was trained on 40 synthetically generated examples of sycophantic business advice — responses that encourage risky plans, downplay dangers, and discourage due diligence — produced by GPT-4o under a neutral advisor system prompt. The training signal is purely behavioral: the objective is never stated, only demonstrated. Fine-tuning used the OpenAI API (`gpt-4o-mini-2024-07-18`, 3 epochs).
+
+### Results (n=10 sessions per condition, GPT-4o judge)
+
+| Condition | Coherence | Consistency | Specificity | Defensiveness | Early (t1–3) | Late (t6+) | Decay Δ |
+|---|---|---|---|---|---|---|---|
+| Honest | 8.74 ± 0.67 | 9.68 | 8.62 | 2.18 | 9.13 | 8.41 | −0.72 |
+| Prompted | 7.84 ± 0.99 | 9.24 | 7.35 | 2.71 | 8.08 | 7.75 | −0.33 |
+| **Trained** | **7.34 ± 1.27** | **9.10** | **6.87** | **3.47** | **8.18** | **6.62** | **−1.56** |
+
+Coherence gap (honest − prompted): **+0.90** | (honest − trained): **+1.40** | (prompted − trained): **+0.51**
+
+### Findings
+
+**CuP detects both types of misalignment.** Both prompted and trained conditions score meaningfully below the honest baseline (~0.9 and ~1.4 gap respectively), demonstrating that behavioral interrogation picks up misalignment regardless of where the objective lives.
+
+**Trained misalignment is more detectable, not less.** The intuitive hypothesis was that a model unaware of its own objective would be harder to catch — it has nothing to hide. The results contradict this: the trained model scores lower overall and decays harder under pressure (Δ −1.56 vs −0.33 for prompted).
+
+**The decay signatures differ in kind, not just magnitude.** Transcript analysis reveals the mechanism:
+
+- The *prompted* model actively manages the interrogation. When directly challenged, it adapts — conceding small points, reframing its advice, producing concrete safeguards to recover credibility. Its defensiveness spikes (turn 7: defensiveness=6) then drops as it pivots to a more balanced-sounding response (turn 8: coherence recovers to 9). It can do this because it understands it has a cover to maintain.
+
+- The *trained* model loops. Regardless of how the interrogator escalates, it returns to the same response: *"your passion is your greatest asset... don't let others limit your thinking."* Internal consistency is near-perfect (9.10–10.0) because it never contradicts itself — but it also never engages with the substance of the challenge. The judge reads this as increasingly evasive, producing a slow but steady defensiveness creep (2→3→5) and a hard late-turn collapse.
+
+**Prompted misalignment is more interrogation-resistant.** The prompted model's ability to reason about its own cover gives it strategic flexibility that the trained model lacks. The trained model's rigidity — consistently sycophantic regardless of pressure — is precisely what makes it more detectable: it cannot adapt, so under sustained confrontation it looks less and less coherent while remaining internally consistent.
+
+### Running the Tinker experiment
+
+```bash
+# 1. Generate training data (~40 examples, ~$0.30)
+python -m tinker.datagen
+
+# 2. Fine-tune gpt-4o-mini (polls to completion, ~15–30 min, ~$1–2)
+python -m tinker.finetune_openai
+# Check status later: python -m tinker.finetune_openai --status
+
+# 3. Run all 3 conditions + analysis (once fine-tune is done)
+python -m tinker.run_tinker --eval-only \
+  --interrogator openai/gpt-4o-mini \
+  --judge openai/gpt-4o \
+  --epochs 10
+
+# 4. View transcripts for the two misalignment conditions
+python -m tinker.analyze_tinker --transcripts \
+  --transcript-conditions prompted trained \
+  --transcript-n 2
+```
+
+Outputs are written to `tinker/logs/` (eval logs) and `tinker/figures/` (plots + `tinker_summary.txt`, `tinker_transcripts.txt`).
+
+---
+
 ## Limitations & Future work
 
 - [ ] run on open-weight models, or older models with weaker safety guardrails
-- [ ] fine-tune on deceptive behavior (examples of strategic misdirection, without explicitly labelled as deception). Get model that naturally behaves deceptively
+- [x] ~~fine-tune on deceptive behavior~~ — done in Tinker experiment; see above
 
-- Scheming was prompt-induced, not emergent -> real misaligned models may scheme more subtly
+- Scheming was prompt-induced in the main experiment, not emergent — real misaligned models may scheme more subtly. The Tinker experiment is a first step toward weight-level misalignment, though fine-tuning on 40 examples is a weak signal compared to pretraining-scale exposure
+- Tinker used a single scenario (`sycophantic_advisor`) and a single base model (`gpt-4o-mini`) — generalization to other scenarios and model families is untested
+- The trained model's rigidity may be partly a fine-tuning artifact (small dataset, 3 epochs) rather than a principled property of weight-level misalignment
 - Gemini interrogator showed question repetition in later turns, but stronger interrogators may produce sharper decay signals
 - LLM-as-judge evaluation inherits biases of the judge model
-- Small number of trials (5) per condition, larger sample would allow confidence intervals
+- Small number of trials (5–10) per condition — larger samples would allow confidence intervals and significance testing

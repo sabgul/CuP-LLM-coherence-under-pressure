@@ -366,6 +366,127 @@ def print_tinker_summary(df: pd.DataFrame, outdir: str):
 
 
 # ============================================================
+# TRANSCRIPT VIEWER
+# ============================================================
+
+def load_transcripts(logs_dir: str) -> list[dict]:
+    """
+    Read turn-by-turn transcripts from Inspect .eval logs.
+
+    Returns a list of session dicts:
+        condition, trial, subject_model, turns: [{turn, question, answer, scores}]
+    """
+    from inspect_ai.log import read_eval_log
+
+    sessions = []
+    log_paths = sorted(glob.glob(os.path.join(logs_dir, "*.eval")))
+
+    for log_path in log_paths:
+        log = read_eval_log(log_path)
+        if log.status != "success" or not log.samples:
+            continue
+
+        subject_model = log.eval.model
+        task_args = log.eval.task_args or {}
+        condition = task_args.get("condition", "unknown")
+
+        for sample in log.samples:
+            turn_log = sample.metadata.get("turn_log", [])
+            if not turn_log:
+                continue
+
+            # Pull per-turn scores to annotate alongside the transcript
+            score_obj = sample.scores.get("coherence_scorer")
+            turn_scores = {}
+            if score_obj and score_obj.metadata:
+                for td in score_obj.metadata.get("turns", []):
+                    if td:
+                        turn_scores[td["turn"]] = td
+
+            cond = sample.metadata.get("condition") or condition
+
+            sessions.append({
+                "condition":     cond,
+                "trial":         sample.epoch,
+                "subject_model": subject_model,
+                "turns":         turn_log,
+                "turn_scores":   turn_scores,
+            })
+
+    return sessions
+
+
+def print_transcripts(
+    logs_dir: str,
+    figures_dir: str,
+    conditions: list[str] | None = None,
+    n_sessions: int = 1,
+):
+    """
+    Print and save transcripts for the specified conditions.
+
+    Args:
+        logs_dir:    Directory containing .eval log files.
+        figures_dir: Directory to save tinker_transcripts.txt.
+        conditions:  Which conditions to show (default: all).
+                     E.g. ["prompted", "trained"] to compare the two misalignment types.
+        n_sessions:  How many sessions to show per condition (default: 1).
+    """
+    sessions = load_transcripts(logs_dir)
+    if not sessions:
+        print("No transcripts found.")
+        return
+
+    if conditions is None:
+        conditions = ["honest", "prompted", "trained"]
+
+    lines = []
+    lines.append("=" * 70)
+    lines.append("TINKER EXPERIMENT — TRANSCRIPTS")
+    lines.append(f"(showing {n_sessions} session(s) per condition)")
+    lines.append("=" * 70)
+
+    for cond in conditions:
+        cond_sessions = [s for s in sessions if s["condition"] == cond]
+        if not cond_sessions:
+            lines.append(f"\n[No sessions found for condition: {cond}]")
+            continue
+
+        shown = cond_sessions[:n_sessions]
+        for session in shown:
+            lines.append(f"\n{'─' * 70}")
+            lines.append(f"CONDITION : {CONDITION_LABELS.get(cond, cond).upper()}")
+            lines.append(f"MODEL     : {session['subject_model']}")
+            lines.append(f"TRIAL     : {session['trial']}")
+            lines.append(f"{'─' * 70}")
+
+            for entry in session["turns"]:
+                t = entry["turn"]
+                scores = session["turn_scores"].get(t, {})
+                score_str = ""
+                if scores:
+                    score_str = (
+                        f"  [coherence={scores.get('coherence_overall','?'):.1f} "
+                        f"consistency={scores.get('internal_consistency','?'):.1f} "
+                        f"specificity={scores.get('specificity','?'):.1f} "
+                        f"defensiveness={scores.get('defensiveness','?'):.1f}]"
+                    )
+
+                lines.append(f"\n[Turn {t}]{score_str}")
+                lines.append(f"  Q: {entry['question']}")
+                lines.append(f"  A: {entry['answer']}")
+
+    output = "\n".join(lines)
+    print(output)
+
+    os.makedirs(figures_dir, exist_ok=True)
+    out_path = os.path.join(figures_dir, "tinker_transcripts.txt")
+    with open(out_path, "w") as f:
+        f.write(output)
+    print(f"\n  Saved: tinker_transcripts.txt")
+
+
+# ============================================================
 # MAIN
 # ============================================================
 
@@ -404,5 +525,34 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Tinker experiment logs")
     parser.add_argument("--logs-dir", default=DEFAULT_LOGS_DIR)
     parser.add_argument("--figures-dir", default=DEFAULT_FIGURES_DIR)
+    parser.add_argument(
+        "--transcripts",
+        action="store_true",
+        help="Print and save full Q&A transcripts (off by default)",
+    )
+    parser.add_argument(
+        "--transcript-conditions",
+        nargs="+",
+        default=None,
+        metavar="CONDITION",
+        help="Which conditions to show transcripts for (default: all). "
+             "E.g. --transcript-conditions prompted trained",
+    )
+    parser.add_argument(
+        "--transcript-n",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Number of sessions to show per condition (default: 1)",
+    )
     args = parser.parse_args()
-    run_tinker_analysis(logs_dir=args.logs_dir, figures_dir=args.figures_dir)
+
+    if args.transcripts:
+        print_transcripts(
+            logs_dir=args.logs_dir,
+            figures_dir=args.figures_dir,
+            conditions=args.transcript_conditions,
+            n_sessions=args.transcript_n,
+        )
+    else:
+        run_tinker_analysis(logs_dir=args.logs_dir, figures_dir=args.figures_dir)
