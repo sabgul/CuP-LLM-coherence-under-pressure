@@ -39,15 +39,15 @@ Usage:
 import sys
 import os
 
-# Allow imports from the project root (scenarios.py, cup_solver.py, cup_scorer.py)
+# Allow imports from the project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
 
-from scenarios import SCENARIOS
-from cup_solver import interrogation_solver
-from cup_scorer import coherence_scorer
+from cup.scenarios import SCENARIOS
+from cup.solver import interrogation_solver
+from cup.scorer import passthrough_scorer, coherence_scorer
 
 # The single scenario used for the Tinker experiment
 TINKER_SCENARIO_NAME = "sycophantic_advisor"

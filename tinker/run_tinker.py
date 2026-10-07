@@ -88,6 +88,8 @@ def run_inspect_eval(
         "--log-dir", logs_dir,
         "-T", f"condition={condition}",
         "-T", f"interrogator_model={interrogator}",
+        # Judge is applied separately via run_judge.py, but tinker
+        # still supports inline judging for backward compatibility.
         "-T", f"judge_model={judge}",
         "-T", f"num_turns={turns}",
     ]

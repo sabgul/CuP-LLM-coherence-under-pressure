@@ -70,7 +70,8 @@ def load_from_inspect_logs(logs_dir: str = INSPECT_LOGS_DIR) -> pd.DataFrame:
         interrogator_model = task_args.get("interrogator_model", "unknown")
 
         for sample in log.samples:
-            score_obj = sample.scores.get("coherence_scorer")
+            # Support both scorer names: coherence_scorer (judged) and passthrough_scorer (raw)
+            score_obj = sample.scores.get("coherence_scorer") or sample.scores.get("passthrough_scorer")
             if score_obj is None:
                 continue
 
