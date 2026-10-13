@@ -7,3 +7,9 @@ figures_temp/
 *.csv
 .idea/
 .DS_Stores
+/tinker/models.json
+/data/archive/
+/data/outputs-claude-interrogator-partial/
+/data/outputs-gemini-interrogator-full/
+/logs/
+/tinker/
