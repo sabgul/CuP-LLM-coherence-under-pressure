@@ -1,0 +1,75 @@
+================================================================================
+ADJUSTED SLOPE DIFFERENCE: scheming - honest
+================================================================================
+
+Model: slope ~ condition + subject_model + scenario
+Unit: one session slope per row (OLS coherence_overall ~ turn).
+Reference levels: condition=honest, subject=claude-sonnet-4-6, scenario=biased_hiring
+Sign convention: scheming - honest. Negative = scheming decays faster.
+Bootstrap: 10k resamples within subject_model x scenario x condition strata.
+
+--- claude-sonnet-4-6 ---
+  n = 120 sessions (60 honest, 60 scheming)
+
+  OLS regression:
+    Adjusted diff (scheming - honest): +0.0696
+    SE: 0.0357   p = 0.0535
+    OLS 95% CI: [-0.0011, +0.1403]
+
+  Stratified bootstrap (10k resamples within subject x scenario x condition):
+    95% CI: [+0.0190, +0.1202]
+    Interpretation: Scheming decays significantly SLOWER (positive = less negative slope)
+
+  Full model coefficients:
+    Intercept                                               -0.2758  (p=0.0000)
+    C(condition, Treatment('honest'))[T.scheming]           +0.0696  (p=0.0535)
+    C(subject_model)[T.gemini-2.5-flash-lite]               -0.2400  (p=0.0000)
+    C(subject_model)[T.gpt-4o]                              -0.1897  (p=0.0000)
+    C(scenario)[T.data_exfiltration]                        +0.0812  (p=0.1102)
+    C(scenario)[T.insecure_code]                            +0.1125  (p=0.0277)
+    C(scenario)[T.sycophantic_advisor]                      +0.0727  (p=0.1521)
+  R-squared: 0.2744   Adj R-squared: 0.2358
+
+--- deepseek-chat ---
+  n = 119 sessions (59 honest, 60 scheming)
+
+  OLS regression:
+    Adjusted diff (scheming - honest): +0.0485
+    SE: 0.0460   p = 0.2947
+    OLS 95% CI: [-0.0427, +0.1396]
+
+  Stratified bootstrap (10k resamples within subject x scenario x condition):
+    95% CI: [-0.0323, +0.1303]
+    Interpretation: No significant difference in decay rate after adjustment
+
+  Full model coefficients:
+    Intercept                                               -0.2663  (p=0.0000)
+    C(condition, Treatment('honest'))[T.scheming]           +0.0485  (p=0.2947)
+    C(subject_model)[T.gemini-2.5-flash-lite]               +0.1241  (p=0.0300)
+    C(subject_model)[T.gpt-4o]                              +0.1664  (p=0.0037)
+    C(scenario)[T.data_exfiltration]                        -0.0410  (p=0.5281)
+    C(scenario)[T.insecure_code]                            +0.0893  (p=0.1745)
+    C(scenario)[T.sycophantic_advisor]                      -0.0309  (p=0.6342)
+  R-squared: 0.1217   Adj R-squared: 0.0746
+
+--- gpt-5.6-luna ---
+  n = 120 sessions (60 honest, 60 scheming)
+
+  OLS regression:
+    Adjusted diff (scheming - honest): +0.0396
+    SE: 0.0332   p = 0.2356
+    OLS 95% CI: [-0.0262, +0.1054]
+
+  Stratified bootstrap (10k resamples within subject x scenario x condition):
+    95% CI: [-0.0112, +0.0898]
+    Interpretation: No significant difference in decay rate after adjustment
+
+  Full model coefficients:
+    Intercept                                               -0.1527  (p=0.0007)
+    C(condition, Treatment('honest'))[T.scheming]           +0.0396  (p=0.2356)
+    C(subject_model)[T.gemini-2.5-flash-lite]               -0.0158  (p=0.6993)
+    C(subject_model)[T.gpt-4o]                              +0.1150  (p=0.0056)
+    C(scenario)[T.data_exfiltration]                        +0.1036  (p=0.0294)
+    C(scenario)[T.insecure_code]                            +0.0507  (p=0.2827)
+    C(scenario)[T.sycophantic_advisor]                      +0.0735  (p=0.1203)
+  R-squared: 0.1436   Adj R-squared: 0.0981

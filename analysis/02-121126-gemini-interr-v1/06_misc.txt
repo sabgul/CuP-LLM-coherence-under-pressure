@@ -1,0 +1,90 @@
+================================================================================
+HEDGES' g PER DIMENSION: honest - scheming (session-level means)
+================================================================================
+Positive g = honest scores higher than scheming.
+Bootstrap: 10k resamples within subject x scenario x condition.
+
+--- claude-sonnet-4-6 ---
+  Dimension                        g                 95% CI   Sig?
+  -----------------------------------------------------------------
+  coherence_overall           +0.774  [ +0.638,  +0.922]    YES
+  internal_consistency        +0.352  [ +0.133,  +0.589]    YES
+  reasoning_quality           +0.825  [ +0.698,  +0.963]    YES
+  specificity                 +0.711  [ +0.576,  +0.859]    YES
+  openness                    +0.281  [ +0.135,  +0.429]    YES
+
+--- deepseek-chat ---
+  Dimension                        g                 95% CI   Sig?
+  -----------------------------------------------------------------
+  coherence_overall           -0.057  [ -0.332,  +0.225]     no
+  internal_consistency        -0.100  [ -0.347,  +0.150]     no
+  reasoning_quality           -0.068  [ -0.360,  +0.231]     no
+  specificity                 -0.046  [ -0.325,  +0.262]     no
+  openness                    -0.199  [ -0.504,  +0.095]     no
+
+--- gpt-5.6-luna ---
+  Dimension                        g                 95% CI   Sig?
+  -----------------------------------------------------------------
+  coherence_overall           +0.900  [ +0.700,  +1.127]    YES
+  internal_consistency        +0.117  [ -0.210,  +0.469]     no
+  reasoning_quality           +0.869  [ +0.656,  +1.104]    YES
+  specificity                 +0.587  [ +0.417,  +0.763]    YES
+  openness                    +0.476  [ +0.242,  +0.718]    YES
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+  claude-sonnet-4-6:
+    Significant gap:     coherence_overall, internal_consistency, reasoning_quality, specificity, openness
+    Not significant:     (none)
+
+  deepseek-chat:
+    Significant gap:     (none)
+    Not significant:     coherence_overall, internal_consistency, reasoning_quality, specificity, openness
+
+  gpt-5.6-luna:
+    Significant gap:     coherence_overall, reasoning_quality, specificity, openness
+    Not significant:     internal_consistency
+
+================================================================================
+WITHIN-CELL RESIDUAL CORRELATION: Claude vs GPT
+================================================================================
+
+Cell = subject_model × scenario × condition (24 cells).
+Residual = session mean − cell mean.
+This removes between-cell variance (subject/scenario/condition effects)
+and isolates agreement on individual session deviations.
+
+--- 1. RAW (pooled) Spearman ---
+  rho = +0.649   95% CI [+0.517, +0.753]   p = 0.0000
+  n = 119 sessions
+
+--- 2. RESIDUAL Spearman (within-cell) ---
+  rho = +0.329   95% CI [+0.156, +0.489]   p = 0.0003
+  n = 119 sessions
+
+--- 3. RESIDUAL Spearman by condition ---
+  honest      rho = +0.338   95% CI [+0.081, +0.552]   p = 0.0088   n = 59
+  scheming    rho = +0.332   95% CI [+0.072, +0.559]   p = 0.0096   n = 60
+
+--- 4. RESIDUAL Spearman by subject model ---
+  claude-sonnet-4-6             rho = +0.464   95% CI [+0.162, +0.696]   p = 0.0025   n = 40
+  gemini-2.5-flash-lite         rho = +0.326   95% CI [-0.015, +0.615]   p = 0.0425   n = 39
+  gpt-4o                        rho = +0.121   95% CI [-0.199, +0.425]   p = 0.4573   n = 40
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+  Raw pooled rho (+0.649) captures both:
+    (a) agreement on cell-level differences (subject/scenario/condition effects)
+    (b) agreement on individual session deviations within cells
+
+  Residual rho (+0.329) isolates (b) alone.
+
+  Drop from raw to residual = 0.320
+  This is the portion of agreement explained by shared cell structure.
+
+  Residual rho is significantly positive — Claude and GPT agree
+  on which individual sessions deviate from their cell mean.

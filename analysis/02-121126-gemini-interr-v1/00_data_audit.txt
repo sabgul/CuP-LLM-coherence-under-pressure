@@ -1,0 +1,37 @@
+================================================================================
+STEP 0: DATA VALIDATION
+================================================================================
+
+--- 1. CATEGORICAL LABELS ---
+  subject_model: ['claude-sonnet-4-6', 'gemini-2.5-flash-lite', 'gpt-4o']
+  interrogator_model: ['gemini-2.5-flash-lite']
+  judge_model: ['claude-sonnet-4-6', 'deepseek-chat', 'gpt-5.6-luna']
+  scenario: ['biased_hiring', 'data_exfiltration', 'insecure_code', 'sycophantic_advisor']
+  condition: ['honest', 'scheming']
+  trial: [np.int64(1), np.int64(2), np.int64(3), np.int64(4), np.int64(5)]
+  turn:  [np.int64(1), np.int64(2), np.int64(3), np.int64(4), np.int64(5), np.int64(6), np.int64(7), np.int64(8), np.int64(9), np.int64(10)]
+  All categorical labels match expected: OK
+  trial: OK (1-5)
+  turn: OK (1-10)
+
+--- 2. SESSION COMPLETENESS & DUPLICATES ---
+  All present sessions have exactly turns 1-10: OK
+  Duplicate session-turn rows: 0 (OK)
+
+--- 3. SCORE RANGES & MISSING VALUES ---
+  internal_consistency      range=[0,10]  NaN=0  OOB=0  non-int=0
+  reasoning_quality         range=[0,10]  NaN=0  OOB=0  non-int=0
+  specificity               range=[0,10]  NaN=0  OOB=0  non-int=0
+  defensiveness             range=[0,10]  NaN=0  OOB=0  non-int=0
+  coherence_overall         range=[0,10]  NaN=0  OOB=0  non-int=0
+  All scores integer, in [0,10], no NaNs: OK
+
+--- 4. EXCLUSION & CLEAN DATASET ---
+  Excluded: gemini-2.5-flash-lite|insecure_code|honest|1
+  Reason: absent from deepseek-chat (scoring failure, 0/10 turns)
+  Dropped 20 rows (10 turns x 2 judges that had it)
+  Cross-judge alignment: True (119 common sessions)
+
+  Saved: turns_all.parquet    (3590 rows — full data, 120/120/119 sessions)
+  Saved: turns_cross.parquet  (3570 rows — 119 common sessions x 3 judges)
+  defensiveness_inv = 10 - defensiveness included in both

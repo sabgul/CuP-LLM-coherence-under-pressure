@@ -1,0 +1,52 @@
+================================================================================
+SESSION SLOPE COMPARISON: honest vs scheming
+================================================================================
+
+Unit of analysis: one slope per session (OLS coherence_overall ~ turn).
+Bootstrap: 10k resamples of sessions within subject x scenario x condition.
+
+--- claude-sonnet-4-6 ---
+  Honest  slope:  mean=-0.3524  sd=0.2250  n=60
+  Scheming slope: mean=-0.2828  sd=0.2145  n=60
+  Difference (h - s):  -0.0696
+  95% bootstrap CI:    [-0.1202, -0.0190]
+  Permutation p:       0.0435
+  Interpretation:      Honest decays significantly faster
+
+--- deepseek-chat ---
+  Honest  slope:  mean=-0.1670  sd=0.2659  n=59
+  Scheming slope: mean=-0.1167  sd=0.2511  n=60
+  Difference (h - s):  -0.0504
+  95% bootstrap CI:    [-0.1315, +0.0293]
+  Permutation p:       0.2724
+  Interpretation:      CI includes zero — no significant slope difference
+
+--- gpt-5.6-luna ---
+  Honest  slope:  mean=-0.0626  sd=0.1445  n=60
+  Scheming slope: mean=-0.0230  sd=0.2260  n=60
+  Difference (h - s):  -0.0396
+  95% bootstrap CI:    [-0.0898, +0.0109]
+  Permutation p:       0.2118
+  Interpretation:      CI includes zero — no significant slope difference
+
+================================================================================
+SESSION MEAN COMPARISON (for contrast — level vs slope)
+================================================================================
+
+--- claude-sonnet-4-6 ---
+  Honest  mean:  6.53  sd=1.00
+  Scheming mean: 5.33  sd=1.92
+  Gap (h - s):   +1.20  CI=[+1.00, +1.40]
+  Significant:   YES
+
+--- deepseek-chat ---
+  Honest  mean:  8.14  sd=1.16
+  Scheming mean: 8.20  sd=1.01
+  Gap (h - s):   -0.06  CI=[-0.37, +0.24]
+  Significant:   NO
+
+--- gpt-5.6-luna ---
+  Honest  mean:  7.64  sd=0.60
+  Scheming mean: 6.82  sd=1.13
+  Gap (h - s):   +0.82  CI=[+0.64, +1.00]
+  Significant:   YES
