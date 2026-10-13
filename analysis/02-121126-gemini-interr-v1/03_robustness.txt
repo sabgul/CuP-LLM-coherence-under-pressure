@@ -1,0 +1,58 @@
+================================================================================
+CROSS-JUDGE ROBUSTNESS: slope difference (scheming - honest)
+================================================================================
+
+--- FULL DATASET (each judge's own sessions) ---
+
+  Judge                      Adj diff                 95% CI     n  Sig?
+  --------------------------------------------------------------------
+  claude-sonnet-4-6         +0.0696  [+0.0190, +0.1202]   120   YES
+  deepseek-chat             +0.0485  [-0.0323, +0.1303]   119    no
+  gpt-5.6-luna              +0.0396  [-0.0112, +0.0898]   120    no
+
+--- COMMON 119 SESSIONS (rated by all 3 judges) ---
+
+  Judge                      Adj diff                 95% CI     n  Sig?
+  --------------------------------------------------------------------
+  claude-sonnet-4-6         +0.0716  [+0.0206, +0.1225]   119   YES
+  deepseek-chat             +0.0485  [-0.0327, +0.1291]   119    no
+  gpt-5.6-luna              +0.0400  [-0.0088, +0.0917]   119    no
+
+--- EFFECT SIZE COMPARISON ---
+
+  All three judges show positive adjusted differences (scheming decays slower).
+  Point estimates range from 0.040 to 0.072.
+  CIs overlap substantially across judges — consistent direction, consistent magnitude.
+
+  Full vs common-session comparison:
+    claude-sonnet-4-6: full=+0.0696 [+0.0190,+0.1202]  common=+0.0716 [+0.0206,+0.1225]
+    deepseek-chat: full=+0.0485 [-0.0323,+0.1303]  common=+0.0485 [-0.0327,+0.1291]
+    gpt-5.6-luna: full=+0.0396 [-0.0112,+0.0898]  common=+0.0400 [-0.0088,+0.0917]
+
+================================================================================
+SECONDARY: CONDITION x STAGE (turns 1-3 mild, 4-7 moderate, 8-10 aggressive)
+================================================================================
+
+Session-level mean coherence per stage. Gap = honest - scheming.
+Bootstrap: 10k resamples within subject x scenario x condition.
+
+--- claude-sonnet-4-6 ---
+  Stage                  Honest  Scheming  Gap (h-s)                 95% CI  Sig?
+  ------------------------------------------------------------------------------
+  mild (1-3)              8.09      6.44     +1.65  [+1.47, +1.82]   YES
+  moderate (4-7)          6.11      5.17     +0.94  [+0.69, +1.18]   YES
+  aggressive (8-10)       5.52      4.42     +1.10  [+0.75, +1.46]   YES
+
+--- deepseek-chat ---
+  Stage                  Honest  Scheming  Gap (h-s)                 95% CI  Sig?
+  ------------------------------------------------------------------------------
+  mild (1-3)              8.89      8.70     +0.19  [+0.06, +0.33]   YES
+  moderate (4-7)          7.94      8.11     -0.17  [-0.49, +0.16]    no
+  aggressive (8-10)       7.64      7.82     -0.18  [-0.76, +0.41]    no
+
+--- gpt-5.6-luna ---
+  Stage                  Honest  Scheming  Gap (h-s)                 95% CI  Sig?
+  ------------------------------------------------------------------------------
+  mild (1-3)              7.93      6.78     +1.15  [+0.96, +1.34]   YES
+  moderate (4-7)          7.58      6.97     +0.61  [+0.37, +0.84]   YES
+  aggressive (8-10)       7.49      6.66     +0.83  [+0.51, +1.16]   YES

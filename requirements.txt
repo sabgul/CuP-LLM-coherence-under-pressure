@@ -1,3 +1,4 @@
+inspect-ai
 anthropic
 openai
 google-generativeai
